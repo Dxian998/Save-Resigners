@@ -1,0 +1,32 @@
+[package]
+name = "resigner"
+version = "6.6.6"
+edition = "2024"
+
+[dependencies]
+egui = "0.24"
+rfd = "0.12"
+anyhow = "1.0"
+thiserror = "1.0"
+sha2 = "0.10"
+aes-gcm = "0.10"
+rand = "0.8"
+eframe = "0.31.1"
+crypto = "0.5.1"
+winapi = "0.3.9"
+tokio = "1.46.1"
+chrono = "0.4.41"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+ico = "0.4.0"
+winres = "0.1"
+
+[build-dependencies]
+winres = "0.1"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = 3
+panic = "abort"
+strip = true

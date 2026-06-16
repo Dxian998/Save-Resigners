@@ -1,0 +1,29 @@
+[package]
+name = "steamid-replacer"
+version = "2.0.0"
+edition = "2024"
+
+[dependencies]
+eframe = "0.28"  
+egui = "0.28"
+hex = "0.4"
+rfd = "0.14"
+cc = "1.2.27"
+image = "0.25.6"
+ico = "0.4.0"
+winres = "0.1.12"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "z"
+panic = "abort"
+strip = true
+
+[[bin]]
+name = "steamid-replacer"
+path = "src/main.rs"
+windows_subsystem = "windows" 
+
+[build-dependencies]
+winres = "0.1.12"
