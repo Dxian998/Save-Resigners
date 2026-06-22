@@ -43,9 +43,15 @@ enum Platform {
 
 const GAMES: &[GameInfo] = &[
     GameInfo { 
-        name: "DOOM Eternal & The Dark Ages", 
+        name: "DOOM Eternal", 
+        code: "MANCUBUS",
+        platforms: &[Platform::Steam, Platform::GOG],
+    },
+    GameInfo { 
+        name: "DOOM: The Dark Ages", 
         code: "MANCUBUS",
         platforms: &[Platform::Steam],
+        // platforms: &[Platform::Steam, Platform::GOG],
     },
     GameInfo { 
         name: "Indiana Jones and the Great Circle", 
@@ -125,15 +131,17 @@ impl SaveDataApp {
 
     fn get_game_code(&self) -> String {
         match (self.game_idx, &self.platform) {
-            (1, Platform::GOG) => "PAINELEMENTAL".to_string(),
+            (0, Platform::GOG) => "ARACHNOTRON".to_string(),
+            // (1, Platform::GOG) => "not_on_gog".to_string(), // for future
+            (2, Platform::GOG) => "PAINELEMENTAL".to_string(),
             _ => GAMES[self.game_idx].code.to_string(),
         }
     }
 
     fn get_id_label(&self) -> &'static str {
-        match (&self.platform, self.game_idx) {
-            (Platform::GOG, 1) => "Galaxy ID",
-            _ => "SteamID",
+        match &self.platform {
+            Platform::GOG => "Galaxy ID",
+            Platform::Steam => "SteamID",
         }
     }
 
