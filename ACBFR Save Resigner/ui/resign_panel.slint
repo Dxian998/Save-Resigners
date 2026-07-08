@@ -1,0 +1,80 @@
+import { Button } from "std-widgets.slint";
+import { LabeledField } from "labeled_field.slint";
+import { Palette, Metrics } from "styles.slint";
+
+export component ResignPanel inherits Rectangle {
+
+    in-out property <string> input-path: "";
+    in-out property <string> current-uuid: "";
+    in-out property <string> new-uuid: "";
+    in property <string> status-text: "";
+    in property <bool> status-is-error: false;
+    in property <bool> busy: false;
+    in property <bool> current-uuid-valid: true;
+    in property <bool> new-uuid-valid: true;
+
+    property <bool> can-resign: !root.busy && root.new-uuid != "" && root.new-uuid-valid && root.current-uuid-valid;
+
+    callback browse-clicked();
+    callback resign-clicked();
+    callback current-uuid-edited(string);
+    callback new-uuid-edited(string);
+
+    public function move-current-uuid-cursor-to-end() {
+        current-uuid-field.move-cursor-to-end();
+    }
+    public function move-new-uuid-cursor-to-end() {
+        new-uuid-field.move-cursor-to-end();
+    }
+
+    VerticalLayout {
+        padding: Metrics.spacing-lg;
+        spacing: Metrics.spacing-lg;
+        alignment: start;
+
+        LabeledField {
+            label: "Input Folder";
+            placeholder: "Select save folder...";
+            value <=> root.input-path;
+            show-action: true;
+            action-text: "Browse";
+            action-clicked => { root.browse-clicked(); }
+        }
+
+        current-uuid-field := LabeledField {
+            label: "Current UUID (optional)";
+            placeholder: "Leave blank, it will auto detect";
+            value <=> root.current-uuid;
+            show-action: false;
+            has-error: !root.current-uuid-valid;
+            error-text: "Not a valid UUID";
+            edited(text) => { root.current-uuid-edited(text); }
+        }
+
+        new-uuid-field := LabeledField {
+            label: "New UUID";
+            placeholder: "Enter new UUID";
+            value <=> root.new-uuid;
+            show-action: false;
+            has-error: !root.new-uuid-valid;
+            error-text: "Not a valid UUID (expected 8-4-4-4-12 hex)";
+            edited(text) => { root.new-uuid-edited(text); }
+        }
+
+        Rectangle { height: Metrics.spacing-sm; }
+
+        Button {
+            text: root.busy ? "Resigning..." : "Resign";
+            enabled: root.can-resign;
+            height: 40px;
+            clicked => { root.resign-clicked(); }
+        }
+
+        if root.status-text != "": Text {
+            text: root.status-text;
+            color: root.status-is-error ? Palette.danger : Palette.success;
+            font-size: 12px;
+            horizontal-alignment: center;
+        }
+    }
+}

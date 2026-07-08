@@ -1,0 +1,66 @@
+import { LineEdit, Button } from "std-widgets.slint";
+import { Palette, Metrics } from "styles.slint";
+
+export component LabeledField inherits VerticalLayout {
+
+    in property <string> label: "Label";
+    in property <string> placeholder: "";
+    in-out property <string> value: "";
+    in property <bool> read-only: false;
+    in property <bool> show-action: false;
+    in property <string> action-text: "Action";
+    in property <bool> has-error: false;
+    in property <string> error-text: "";
+
+    callback action-clicked();
+    callback edited(string);
+
+    public function move-cursor-to-end() {
+        field.set-selection-offsets(field.text.character-count, field.text.character-count);
+    }
+
+    spacing: Metrics.spacing-sm;
+
+    Text {
+        text: root.label;
+        color: Palette.text-muted;
+        font-size: 12px;
+    }
+
+    HorizontalLayout {
+        spacing: Metrics.spacing-sm;
+
+        container := Rectangle {
+            horizontal-stretch: 1;
+            height: Metrics.field-height;
+            border-width: root.has-error ? 1.5px : 0px;
+            border-radius: Metrics.radius;
+            border-color: root.has-error ? Palette.danger : transparent;
+
+            field := LineEdit {
+                x: root.has-error ? 1.5px : 0px;
+                y: root.has-error ? 1.5px : 0px;
+                width: root.has-error ? container.width - 3px : container.width;
+                height: root.has-error ? container.height - 3px : container.height;
+                text <=> root.value;
+                placeholder-text: root.placeholder;
+                read-only: root.read-only;
+                edited(text) => { root.edited(text); }
+            }
+        }
+
+        if root.show-action: Button {
+            text: root.action-text;
+            height: Metrics.field-height;
+            horizontal-stretch: 0;
+            clicked => { root.action-clicked(); }
+        }
+    }
+
+    Text {
+        text: root.has-error ? root.error-text : "";
+        color: Palette.danger;
+        font-size: 11px;
+        height: 14px;
+    }
+}

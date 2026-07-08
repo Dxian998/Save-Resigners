@@ -1,0 +1,35 @@
+import { ResignPanel } from "resign_panel.slint";
+import { Palette } from "styles.slint";
+
+export component AppWindow inherits Window {
+    title: "AC Black Flag Resynced Save Resigner";
+    icon: @image-url("icon.png");
+    width: 420px;
+    height: 420px;
+
+    in-out property <string> input-path <=> panel.input-path;
+    in-out property <string> current-uuid <=> panel.current-uuid;
+    in-out property <string> new-uuid <=> panel.new-uuid;
+    in property <string> status-text <=> panel.status-text;
+    in property <bool> status-is-error <=> panel.status-is-error;
+    in property <bool> busy <=> panel.busy;
+    in property <bool> current-uuid-valid <=> panel.current-uuid-valid;
+    in property <bool> new-uuid-valid <=> panel.new-uuid-valid;
+
+    callback browse-clicked <=> panel.browse-clicked;
+    callback resign-clicked <=> panel.resign-clicked;
+    callback current-uuid-edited <=> panel.current-uuid-edited;
+    callback new-uuid-edited <=> panel.new-uuid-edited;
+
+    public function move-current-uuid-cursor-to-end() {
+        panel.move-current-uuid-cursor-to-end();
+    }
+    public function move-new-uuid-cursor-to-end() {
+        panel.move-new-uuid-cursor-to-end();
+    }
+
+    panel := ResignPanel {
+        width: 100%;
+        height: 100%;
+    }
+}

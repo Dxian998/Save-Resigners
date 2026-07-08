@@ -1,0 +1,25 @@
+[package]
+name = "resign-tool"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "resign-tool"
+path = "src/main.rs"
+
+[dependencies]
+slint = { version = "1.17.0", default-features = false, features = ["compat-1-2", "backend-winit", "renderer-software", "std", "unstable-winit-030"] }
+uuid = "1"
+md5 = "0.8"
+rfd = "0.17.2"
+
+[build-dependencies]
+slint-build = "1.16"
+winres = "0.1"
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+strip = true
+panic = "abort"
