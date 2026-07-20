@@ -9,9 +9,10 @@ slint::include_modules!();
 
 const HEADER_SIZE: usize = 40;
 const MAGIC: [u8; 4] = [0xAC, 0xDB, 0xFE, 0x00];
-
-const BFR_PT1: [u8; 16] = [ 0xAC, 0xDB, 0xFE, 0x00, 0x36, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x2E, 0x00, 0x00, 0x00, ];
+const PT1_BASE: [u8; 16] = [ 0xAC, 0xDB, 0xFE, 0x00, 0x36, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 ];
 const BFR_KEYS: &[&str] = &["acblackflag", "acbf"];
+const P40: u8 = 0x99;
+const P44: u8 = 0x03;
 
 fn format_uuid_input(raw: &str) -> String {
     let hex: String = raw
@@ -63,7 +64,7 @@ fn xor_ecb(data: &[u8], key: &[u8; 16]) -> Vec<u8> {
 }
 
 fn kpa(payload: &[u8]) -> Option<([u8; 16], [u8; 16])> {
-    if payload.len() < 16 {
+    if payload.len() < 48 {
         return None;
     }
 
@@ -72,10 +73,16 @@ fn kpa(payload: &[u8]) -> Option<([u8; 16], [u8; 16])> {
 
     let mut post = [0u8; 16];
     for i in 0..16 {
-        post[i] = c1[i] ^ BFR_PT1[i];
+        post[i] = c1[i] ^ PT1_BASE[i];
     }
+    post[8]  = payload[40] ^ P40;
+    post[12] = payload[44] ^ P44;
 
-    if xor_ecb(c1, &post)[..4] != MAGIC {
+    let dec48 = xor_ecb(&payload[..48], &post);
+    if dec48[..4] != MAGIC {
+        return None;
+    }
+    if &dec48[36..48] != &[0x33, 0xAA, 0xFB, 0x57, 0x99, 0xFA, 0x04, 0x10, 0x03, 0x00, 0x05, 0x00] {
         return None;
     }
 
@@ -148,7 +155,6 @@ fn resign_file(path: &Path, backup_dir: &Path, current_uuid: &str, new_uuid: &st
             .map_err(|e| format!("Failed to backup {}: {}", path.display(), e))?;
     }
 
-    // Clear read-only attribute if set (Windows save files are often read-only)
     if let Ok(meta) = fs::metadata(path) {
         let mut perms = meta.permissions();
         if perms.readonly() {
@@ -324,7 +330,6 @@ fn main() -> Result<(), slint::PlatformError> {
                         Ok(_)  => {
                             let msg = "Save resigned successfully!";
                             set_status(&ui, msg, false);
-                            // Auto-clear after 7 s so repeated runs are unambiguous
                             let weak2 = slint::Weak::clone(&weak);
                             std::thread::spawn(move || {
                                 std::thread::sleep(Duration::from_secs(7));
