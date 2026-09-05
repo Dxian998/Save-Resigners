@@ -1,0 +1,110 @@
+import { Button, VerticalBox, HorizontalBox, ScrollView, LineEdit } from "std-widgets.slint";
+
+export component DiagnosticsTab inherits VerticalBox {
+    padding: 16px;
+    spacing: 12px;
+
+    in-out property <string> path: "";
+    in-out property <string> uuid: "";
+    in-out property <string> result: "Select a save file to verify SHA-256 integrity or run a roundtrip test.";
+    in-out property <bool> success: false;
+
+    callback browse_file();
+    callback run_verify();
+    callback run_roundtrip();
+
+    Text { text: "INTEGRITY & DIAGNOSTICS"; font-size: 18px; font-weight: 700; color: #e8e6d6; }
+    Text { text: "Validate SHA-256 ownership digests or simulate in-memory roundtrips to prove bit-for-bit fidelity."; font-size: 14px; color: #8e9297; }
+
+    HorizontalLayout {
+        spacing: 10px;
+        Text { text: "Save File:"; width: 80px; vertical-alignment: center; color: #d0d4dc; }
+        LineEdit {
+            text <=> root.path;
+            placeholder-text: "Select a .save file to test";
+            horizontal-stretch: 1;
+        }
+        Button { text: "Browse"; clicked => { root.browse_file(); } }
+    }
+
+    HorizontalLayout {
+        spacing: 10px;
+        Text { text: "User ID:"; width: 80px; vertical-alignment: center; color: #d0d4dc; }
+        LineEdit {
+            text <=> root.uuid;
+            placeholder-text: "Ubisoft Account UUID to verify against save digest";
+            horizontal-stretch: 1;
+        }
+    }
+
+    HorizontalLayout {
+        spacing: 12px;
+        Button {
+            text: "Verify Ownership Digest";
+            primary: true;
+            clicked => { root.run_verify(); }
+        }
+        Button {
+            text: "Run In-Memory Roundtrip";
+            clicked => { root.run_roundtrip(); }
+        }
+    }
+
+    Rectangle {
+        vertical-stretch: 1;
+        background: #0d0f12;
+        border-radius: 4px;
+        border-width: 1px;
+        border-color: #272c33;
+        clip: true;
+
+        VerticalLayout {
+            padding: 0px;
+            spacing: 0px;
+
+            Rectangle {
+                height: 30px;
+                background: #16191e;
+
+                HorizontalLayout {
+                    padding-left: 14px;
+                    padding-right: 14px;
+                    alignment: start;
+
+                    Text {
+                        text: "TERMINAL OUTPUT";
+                        font-size: 14px;
+                        font-weight: 700;
+                        color: #dce1eb;
+                        letter-spacing: 0.8px;
+                        vertical-alignment: center;
+                    }
+                }
+            }
+
+            Rectangle {
+                height: 1px;
+                background: #232830;
+            }
+
+            ScrollView {
+                vertical-stretch: 1;
+                horizontal-stretch: 1;
+
+                VerticalLayout {
+                    padding: 14px;
+                    alignment: start;
+
+                    Text {
+                        text: root.result;
+                        color: root.success ? #86de74 : #e07e6a;
+                        font-size: 14px;
+                        font-family: "Consolas";
+                        horizontal-alignment: left;
+                        wrap: word-wrap;
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,142 @@
+import { Button, VerticalBox, HorizontalBox, ScrollView, LineEdit } from "std-widgets.slint";
+import { CustomComboBox } from "widgets.slint";
+
+export component WorkshopTab inherits VerticalBox {
+    padding: 16px;
+    spacing: 12px;
+
+    in-out property <string> decrypt_path: "";
+    in-out property <string> repack_bin: "";
+    in-out property <string> repack_hdr: "";
+    in-out property <string> repack_id: "";
+    in-out property <int> platform: 0;
+    in-out property <string> log: "Ready. Decrypt save into raw payload or repack an edited payload.";
+
+    callback browse_decrypt_file();
+    callback run_decrypt();
+    callback browse_repack_bin();
+    callback browse_repack_hdr();
+    callback run_repack();
+
+    Text { text: "PAYLOAD WORKSHOP"; font-size: 18px; font-weight: 700; color: #e8e6d6; }
+    Text { text: "Extract raw plaintext payload (.bin) alongside matching header (.header), or repack modified payload back into .save."; font-size: 14px; color: #8e9297; }
+
+    Rectangle {
+        background: #181b1f; border-radius: 4px; border-width: 1px; border-color: #272c33;
+        VerticalBox {
+            spacing: 8px;
+            Text { text: "1. EXTRACT PAYLOAD & HEADER"; font-size: 14px; font-weight: 700; color: #d9bc69; }
+            HorizontalLayout {
+                spacing: 10px;
+                LineEdit {
+                    text <=> root.decrypt_path;
+                    placeholder-text: "Select .save file to unpack";
+                    horizontal-stretch: 1;
+                }
+                Button { text: "Browse"; clicked => { root.browse_decrypt_file(); } }
+                Button { text: "Extract"; primary: true; clicked => { root.run_decrypt(); } }
+            }
+        }
+    }
+
+    Rectangle {
+        background: #181b1f; border-radius: 4px; border-width: 1px; border-color: #272c33;
+        VerticalBox {
+            spacing: 8px;
+            Text { text: "2. REPACK PAYLOAD INTO .SAVE"; font-size: 14px; font-weight: 700; color: #d9bc69; }
+            HorizontalLayout {
+                spacing: 10px;
+                Text { text: "Plaintext .bin:"; width: 95px; vertical-alignment: center; color: #d0d4dc; }
+                LineEdit {
+                    text <=> root.repack_bin;
+                    placeholder-text: "Select decrypted .bin payload";
+                    horizontal-stretch: 1;
+                }
+                Button { text: "Browse"; clicked => { root.browse_repack_bin(); } }
+            }
+            HorizontalLayout {
+                spacing: 10px;
+                Text { text: "Header .header:"; width: 95px; vertical-alignment: center; color: #d0d4dc; }
+                LineEdit {
+                    text <=> root.repack_hdr;
+                    placeholder-text: "(Optional) Auto-detects matching .header or uses template";
+                    horizontal-stretch: 1;
+                }
+                Button { text: "Browse"; clicked => { root.browse_repack_hdr(); } }
+            }
+            HorizontalLayout {
+                spacing: 10px;
+                Text { text: "Target UUID:"; width: 95px; vertical-alignment: center; color: #d0d4dc; }
+                LineEdit {
+                    text <=> root.repack_id;
+                    placeholder-text: "Target User ID for signature";
+                    horizontal-stretch: 1;
+                }
+                CustomComboBox {
+                    model: ["Ubisoft Connect", "Steam"];
+                    current-index <=> root.platform;
+                    width: 150px;
+                }
+                Button { text: "Repack Save"; primary: true; clicked => { root.run_repack(); } }
+            }
+        }
+    }
+
+    Rectangle {
+        vertical-stretch: 1;
+        background: #0d0f12;
+        border-radius: 4px;
+        border-width: 1px;
+        border-color: #272c33;
+        clip: true;
+
+        VerticalLayout {
+            padding: 0px;
+            spacing: 0px;
+
+            Rectangle {
+                height: 30px;
+                background: #16191e;
+
+                HorizontalLayout {
+                    padding-left: 14px;
+                    padding-right: 14px;
+                    alignment: start;
+
+                    Text {
+                        text: "TERMINAL OUTPUT";
+                        font-size: 14px;
+                        font-weight: 700;
+                        color: #dce1eb;
+                        letter-spacing: 0.8px;
+                        vertical-alignment: center;
+                    }
+                }
+            }
+
+            Rectangle {
+                height: 1px;
+                background: #232830;
+            }
+
+            ScrollView {
+                vertical-stretch: 1;
+                horizontal-stretch: 1;
+
+                VerticalLayout {
+                    padding: 14px;
+                    alignment: start;
+
+                    Text {
+                        text: root.log;
+                        color: #86de74;
+                        font-size: 14px;
+                        font-family: "Consolas";
+                        horizontal-alignment: left;
+                        wrap: word-wrap;
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,27 @@
+cargo-features = ["profile-rustflags", "trim-paths"]
+
+[package]
+name = "grw-save-toolkit"
+version = "1.0.1"
+edition = "2024"
+build = "build.rs"
+
+[dependencies]
+slint = { version = "1.17", default-features = false, features = ["compat-1-2", "backend-winit", "renderer-software", "std", "unstable-winit-030"] }
+sha2 = "0.10"
+anyhow = "1"
+rfd = "0.15"
+chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+
+[build-dependencies]
+slint-build = "1.17"
+winres = "0.1"
+
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = "z"
+strip = true
+panic = "abort"
+trim-paths = "all"
+rustflags = ["-Cdebuginfo=0"]

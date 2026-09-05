@@ -1,0 +1,284 @@
+import { ResignerTab } from "resigner.slint";
+import { InspectorTab, SaveInfoData } from "inspector.slint";
+import { WorkshopTab } from "workshop.slint";
+import { DiagnosticsTab } from "diagnostics.slint";
+import { BackupTab, BackupItem } from "backup.slint";
+import { SettingsTab } from "settings.slint";
+import { EditorTab, EditorSaveData } from "editor.slint";
+
+export { SaveInfoData, BackupItem, EditorSaveData }
+
+export component AppWindow inherits Window {
+    title: "GRW Save Toolkit";
+    icon: @image-url("../assets/icon.png");
+    preferred-width: 980px;
+    preferred-height: 680px;
+    min-width: 980px;
+    max-width: 980px;
+    min-height: 680px;
+    max-height: 680px;
+    background: #111315;
+    default-font-family: "Segoe UI";
+
+    in-out property <int> active_tab: 0;
+    in-out property <int> default_tab_setting: 0;
+
+    in-out property <bool> resign_is_folder <=> resigner.is_folder;
+    in-out property <string> resign_path <=> resigner.path;
+    in-out property <string> resign_target_id <=> resigner.target_id;
+    in-out property <string> resign_source_id <=> resigner.source_id;
+    in-out property <int> resign_platform <=> resigner.platform;
+    in-out property <string> resign_out_dir <=> resigner.out_dir;
+    in-out property <string> resign_log <=> resigner.log;
+
+    in-out property <string> inspect_path <=> inspector.path;
+    in-out property <SaveInfoData> inspect_data <=> inspector.data;
+
+    in-out property <string> workshop_decrypt_path <=> workshop.decrypt_path;
+    in-out property <string> workshop_repack_bin <=> workshop.repack_bin;
+    in-out property <string> workshop_repack_hdr <=> workshop.repack_hdr;
+    in-out property <string> workshop_repack_id <=> workshop.repack_id;
+    in-out property <int> workshop_platform <=> workshop.platform;
+    in-out property <string> workshop_log <=> workshop.log;
+
+    in-out property <string> diag_path <=> diag.path;
+    in-out property <string> diag_uuid <=> diag.uuid;
+    in-out property <string> diag_result <=> diag.result;
+    in-out property <bool> diag_success <=> diag.success;
+
+    in-out property <string> backup_ubi_dir <=> backup.ubi_dir;
+    in-out property <string> backup_target_uuid <=> backup.target_uuid;
+    in-out property <string> backup_target_dir <=> backup.target_dir;
+    in-out property <bool> backup_auto_enabled <=> backup.auto_enabled;
+    in-out property <int> backup_interval_idx <=> backup.interval_idx;
+    in-out property <[BackupItem]> backup_items <=> backup.items;
+    in-out property <int> backup_selected_idx <=> backup.selected_idx;
+    in-out property <string> backup_status <=> backup.status;
+
+    in-out property <string> editor_save_path <=> editor.save_path;
+    in-out property <EditorSaveData> editor_data <=> editor.data;
+    in-out property <string> editor_target_uuid <=> editor.target_uuid;
+    in-out property <int> editor_platform <=> editor.platform;
+    in-out property <string> editor_hex_find <=> editor.hex_find;
+    in-out property <string> editor_hex_replace <=> editor.hex_replace;
+    in-out property <string> editor_log <=> editor.log;
+
+    callback switch_tab(int);
+    callback browse_resign_path();
+    callback browse_resign_out();
+    callback run_resign();
+
+    callback browse_inspect_file();
+    callback run_inspect();
+
+    callback browse_workshop_decrypt_file();
+    callback run_workshop_decrypt();
+    callback browse_workshop_repack_bin();
+    callback browse_workshop_repack_hdr();
+    callback run_workshop_repack();
+
+    callback browse_editor_file();
+    callback run_editor_load();
+    callback run_editor_reload();
+    callback export_editor_bin();
+    callback adjust_editor_playtime(int);
+    callback apply_editor_profile_unlocks(int);
+    callback apply_editor_quick_patch(int);
+    callback apply_editor_hex_patch();
+    callback run_editor_save();
+
+    callback browse_diag_file();
+    callback run_diag_verify();
+    callback run_diag_roundtrip();
+
+    callback browse_backup_ubi_dir();
+    callback detect_backup_uuids();
+    callback browse_backup_dir();
+    callback run_create_snapshot();
+    callback toggle_auto_backup(bool, int);
+    callback run_restore_backup(string);
+    callback refresh_backups();
+
+    callback save_settings(int);
+
+    VerticalLayout {
+        padding: 0px;
+        spacing: 0px;
+
+        Rectangle {
+            height: 52px;
+            background: #181b1f;
+            border-width: 1px;
+            border-color: #272c33;
+
+            HorizontalLayout {
+                padding-left: 16px;
+                padding-right: 16px;
+
+                HorizontalLayout {
+                    spacing: 10px;
+                    alignment: start;
+
+                    Rectangle {
+                        width: 32px;
+                        Image {
+                            source: @image-url("../assets/icon.png");
+                            width: 32px;
+                            height: 32px;
+                            image-fit: contain;
+                            y: (parent.height - self.height) / 2;
+                        }
+                    }
+                    Text {
+                        text: "GRW SAVE TOOLKIT";
+                        color: #e8e6d6;
+                        font-size: 14px;
+                        font-weight: 700;
+                        vertical-alignment: center;
+                        letter-spacing: 1px;
+                    }
+                }
+
+                Rectangle { horizontal-stretch: 1; }
+
+                HorizontalLayout {
+                    spacing: 4px;
+                    alignment: end;
+
+                    Rectangle {
+                        width: 90px; height: 36px; border-radius: 4px;
+                        y: (parent.height - self.height) / 2;
+                        background: root.active_tab == 0 ? #272d36 : (t0.has-hover ? #20242b : transparent);
+                        border-width: root.active_tab == 0 ? 1px : 0px;
+                        border-color: #d9bc69;
+                        Text { text: "RESIGNER"; font-size: 11px; font-weight: 700; color: root.active_tab == 0 ? #d9bc69 : #b2b6bd; horizontal-alignment: center; vertical-alignment: center; }
+                        t0 := TouchArea { clicked => { root.switch_tab(0); } }
+                    }
+
+                    Rectangle {
+                        width: 80px; height: 36px; border-radius: 4px;
+                        y: (parent.height - self.height) / 2;
+                        background: root.active_tab == 1 ? #272d36 : (t1.has-hover ? #20242b : transparent);
+                        border-width: root.active_tab == 1 ? 1px : 0px;
+                        border-color: #d9bc69;
+                        Text { text: "BACKUPS"; font-size: 11px; font-weight: 700; color: root.active_tab == 1 ? #d9bc69 : #b2b6bd; horizontal-alignment: center; vertical-alignment: center; }
+                        t1 := TouchArea { clicked => { root.switch_tab(1); } }
+                    }
+
+                    Rectangle {
+                        width: 88px; height: 36px; border-radius: 4px;
+                        y: (parent.height - self.height) / 2;
+                        background: root.active_tab == 2 ? #272d36 : (t2.has-hover ? #20242b : transparent);
+                        border-width: root.active_tab == 2 ? 1px : 0px;
+                        border-color: #d9bc69;
+                        Text { text: "INSPECTOR"; font-size: 11px; font-weight: 700; color: root.active_tab == 2 ? #d9bc69 : #b2b6bd; horizontal-alignment: center; vertical-alignment: center; }
+                        t2 := TouchArea { clicked => { root.switch_tab(2); } }
+                    }
+
+                    Rectangle {
+                        width: 88px; height: 36px; border-radius: 4px;
+                        y: (parent.height - self.height) / 2;
+                        background: root.active_tab == 3 ? #272d36 : (t3.has-hover ? #20242b : transparent);
+                        border-width: root.active_tab == 3 ? 1px : 0px;
+                        border-color: #d9bc69;
+                        Text { text: "WORKSHOP"; font-size: 11px; font-weight: 700; color: root.active_tab == 3 ? #d9bc69 : #b2b6bd; horizontal-alignment: center; vertical-alignment: center; }
+                        t3 := TouchArea { clicked => { root.switch_tab(3); } }
+                    }
+
+                    Rectangle {
+                        width: 98px; height: 36px; border-radius: 4px;
+                        y: (parent.height - self.height) / 2;
+                        background: root.active_tab == 4 ? #272d36 : (t4.has-hover ? #20242b : transparent);
+                        border-width: root.active_tab == 4 ? 1px : 0px;
+                        border-color: #d9bc69;
+                        Text { text: "POC EDITOR"; font-size: 11px; font-weight: 700; color: root.active_tab == 4 ? #d9bc69 : #b2b6bd; horizontal-alignment: center; vertical-alignment: center; }
+                        t4 := TouchArea { clicked => { root.switch_tab(4); } }
+                    }
+
+                    Rectangle {
+                        width: 98px; height: 36px; border-radius: 4px;
+                        y: (parent.height - self.height) / 2;
+                        background: root.active_tab == 5 ? #272d36 : (t5.has-hover ? #20242b : transparent);
+                        border-width: root.active_tab == 5 ? 1px : 0px;
+                        border-color: #d9bc69;
+                        Text { text: "DIAGNOSTICS"; font-size: 11px; font-weight: 700; color: root.active_tab == 5 ? #d9bc69 : #b2b6bd; horizontal-alignment: center; vertical-alignment: center; }
+                        t5 := TouchArea { clicked => { root.switch_tab(5); } }
+                    }
+
+                    Rectangle {
+                        width: 78px; height: 36px; border-radius: 4px;
+                        y: (parent.height - self.height) / 2;
+                        background: root.active_tab == 6 ? #272d36 : (t6.has-hover ? #20242b : transparent);
+                        border-width: root.active_tab == 6 ? 1px : 0px;
+                        border-color: #d9bc69;
+                        Text { text: "SETTINGS"; font-size: 11px; font-weight: 700; color: root.active_tab == 6 ? #d9bc69 : #b2b6bd; horizontal-alignment: center; vertical-alignment: center; }
+                        t6 := TouchArea { clicked => { root.switch_tab(6); } }
+                    }
+                }
+            }
+        }
+
+        Rectangle {
+            vertical-stretch: 1;
+
+            resigner := ResignerTab {
+                visible: root.active_tab == 0;
+                browse_path => { root.browse_resign_path(); }
+                browse_out => { root.browse_resign_out(); }
+                run_resign => { root.run_resign(); }
+            }
+
+            backup := BackupTab {
+                visible: root.active_tab == 1;
+                browse_ubi_dir => { root.browse_backup_ubi_dir(); }
+                detect_uuids => { root.detect_backup_uuids(); }
+                browse_dir => { root.browse_backup_dir(); }
+                run_snapshot => { root.run_create_snapshot(); }
+                toggle_auto(en, idx) => { root.toggle_auto_backup(en, idx); }
+                run_restore(fp) => { root.run_restore_backup(fp); }
+                refresh_list => { root.refresh_backups(); }
+            }
+
+            inspector := InspectorTab {
+                visible: root.active_tab == 2;
+                browse_file => { root.browse_inspect_file(); }
+                run_inspect => { root.run_inspect(); }
+            }
+
+            workshop := WorkshopTab {
+                visible: root.active_tab == 3;
+                browse_decrypt_file => { root.browse_workshop_decrypt_file(); }
+                run_decrypt => { root.run_workshop_decrypt(); }
+                browse_repack_bin => { root.browse_workshop_repack_bin(); }
+                browse_repack_hdr => { root.browse_workshop_repack_hdr(); }
+                run_repack => { root.run_workshop_repack(); }
+            }
+
+            editor := EditorTab {
+                visible: root.active_tab == 4;
+                browse_file => { root.browse_editor_file(); }
+                run_load => { root.run_editor_load(); }
+                run_reload => { root.run_editor_reload(); }
+                export_bin => { root.export_editor_bin(); }
+                adjust_playtime(h) => { root.adjust_editor_playtime(h); }
+                apply_profile_unlocks(t) => { root.apply_editor_profile_unlocks(t); }
+                apply_quick_patch(p) => { root.apply_editor_quick_patch(p); }
+                apply_hex_patch => { root.apply_editor_hex_patch(); }
+                run_save => { root.run_editor_save(); }
+            }
+
+            diag := DiagnosticsTab {
+                visible: root.active_tab == 5;
+                browse_file => { root.browse_diag_file(); }
+                run_verify => { root.run_diag_verify(); }
+                run_roundtrip => { root.run_diag_roundtrip(); }
+            }
+
+            settings := SettingsTab {
+                visible: root.active_tab == 6;
+                default_tab <=> root.default_tab_setting;
+                save_settings(idx) => { root.save_settings(idx); }
+            }
+        }
+    }
+}

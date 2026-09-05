@@ -1,0 +1,353 @@
+import { Button, VerticalBox, HorizontalBox, ScrollView, LineEdit } from "std-widgets.slint";
+import { CustomComboBox } from "widgets.slint";
+
+export struct EditorSaveData {
+    loaded: bool,
+    file_name: string,
+    file_size: string,
+    save_type: string,
+    platform: string,
+    slot_title: string,
+    slot_counter: string,
+    has_json: bool,
+    json_content: string,
+    payload_size: string,
+}
+
+export component EditorTab inherits VerticalLayout {
+    padding: 14px;
+    spacing: 10px;
+
+    in-out property <string> save_path: "";
+    in-out property <EditorSaveData> data;
+    in-out property <string> target_uuid: "";
+    in-out property <int> platform: 0;
+    in-out property <string> hex_find: "";
+    in-out property <string> hex_replace: "";
+    in-out property <string> log: "Select a .save file to load and decrypt into the POC editor.";
+
+    callback browse_file();
+    callback run_load();
+    callback run_reload();
+    callback export_bin();
+    callback adjust_playtime(int);
+    callback apply_profile_unlocks(int);
+    callback apply_quick_patch(int);
+    callback apply_hex_patch();
+    callback run_save();
+
+    HorizontalLayout {
+        vertical-stretch: 0;
+        Text { text: "POC SAVE EDITOR"; font-size: 16px; font-weight: 700; color: #e8e6d6; vertical-alignment: center; }
+        Rectangle { horizontal-stretch: 1; }
+        Rectangle {
+            background: #3b2a1a;
+            border-radius: 3px;
+            border-width: 1px;
+            border-color: #8c5b23;
+            height: 22px;
+            HorizontalLayout {
+                padding-left: 8px;
+                padding-right: 8px;
+                Text {
+                    text: "EXPERIMENTAL POC";
+                    font-size: 10px;
+                    font-weight: 700;
+                    color: #e5a83b;
+                    vertical-alignment: center;
+                }
+            }
+        }
+    }
+
+    Rectangle {
+        vertical-stretch: 0;
+        background: #231a10;
+        border-radius: 4px;
+        border-width: 1px;
+        border-color: #5c3814;
+        HorizontalLayout {
+            padding-left: 10px;
+            padding-right: 10px;
+            padding-top: 6px;
+            padding-bottom: 6px;
+            spacing: 8px;
+            Text { text: "⚠"; font-size: 12px; color: #e5a83b; vertical-alignment: center; }
+            Text {
+                text: "NOTICE: Experimental Proof-of-Concept for code reference only. Not a fully functional save editor. Back up saves before testing. See description for Nexus Mods source.";
+                font-size: 11px;
+                color: #c4a67e;
+                vertical-alignment: center;
+            }
+        }
+    }
+
+    Rectangle {
+        vertical-stretch: 0;
+        background: #181b1f;
+        border-radius: 4px;
+        border-width: 1px;
+        border-color: #272c33;
+        VerticalLayout {
+            padding-left: 12px;
+            padding-right: 12px;
+            padding-top: 8px;
+            padding-bottom: 8px;
+            spacing: 6px;
+            Text { text: "LOAD SAVE FILE"; font-size: 11px; font-weight: 700; color: #d9bc69; }
+            HorizontalLayout {
+                spacing: 8px;
+                LineEdit {
+                    text <=> root.save_path;
+                    placeholder-text: "Select a .save file (e.g. 1.save, 2.save, 3.save, 4.save)";
+                    horizontal-stretch: 1;
+                    height: 32px;
+                }
+                Button { text: "Browse"; height: 32px; clicked => { root.browse_file(); } }
+                Button { text: "Load & Decrypt"; primary: true; height: 32px; clicked => { root.run_load(); } }
+            }
+        }
+    }
+
+    if !root.data.loaded: Rectangle {
+        vertical-stretch: 1;
+        background: #141618;
+        border-radius: 4px;
+        border-width: 1px;
+        border-color: #272c33;
+        VerticalLayout {
+            padding: 16px;
+            spacing: 12px;
+            alignment: start;
+
+            Text { text: "POC SAVE EDITOR OVERVIEW & CAPABILITIES"; font-size: 13px; font-weight: 700; color: #d9bc69; }
+            Text {
+                text: "This experimental tool decrypts proprietary multi-stage encrypted saves in-memory, provides research inspection tools, and re-signs them with authentic SHA-256 HMAC tokens.";
+                font-size: 11px;
+                color: #8e9297;
+            }
+
+            Rectangle { height: 1px; background: #272c33; }
+
+            HorizontalLayout {
+                spacing: 16px;
+                Rectangle {
+                    horizontal-stretch: 1;
+                    background: #181b1f;
+                    border-radius: 4px;
+                    border-width: 1px;
+                    border-color: #272c33;
+                    VerticalLayout {
+                        padding: 12px;
+                        spacing: 6px;
+                        Text { text: "GLOBAL PROFILE SAVES (1.save / 2.save)"; font-size: 11px; font-weight: 700; color: #a2ca84; }
+                        Text { text: "• Unlocks Fallen Ghosts & Narco Road DLC packages"; font-size: 11px; color: #c8cdd5; }
+                        Text { text: "• Unlocks Ubisoft Club & Store rewards (EAFREE, unhide=1)"; font-size: 11px; color: #c8cdd5; }
+                        Text { text: "• Injects live season & community challenge entitlements"; font-size: 11px; color: #c8cdd5; }
+                        Text { text: "• Direct embedded JSON entitlement block inspection"; font-size: 11px; color: #c8cdd5; }
+                    }
+                }
+                Rectangle {
+                    horizontal-stretch: 1;
+                    background: #181b1f;
+                    border-radius: 4px;
+                    border-width: 1px;
+                    border-color: #272c33;
+                    VerticalLayout {
+                        padding: 12px;
+                        spacing: 6px;
+                        Text { text: "CAMPAIGN SLOT SAVES (3.save / 4.save)"; font-size: 11px; font-weight: 700; color: #6db3f2; }
+                        Text { text: "• Modifies header slot timestamp & custom title metadata"; font-size: 11px; color: #c8cdd5; }
+                        Text { text: "• Edits 32-bit playtime tick counter (offset 0x00030)"; font-size: 11px; color: #c8cdd5; }
+                        Text { text: "• Quick resource & skill points search/replace presets"; font-size: 11px; color: #c8cdd5; }
+                        Text { text: "• In-memory hex byte patcher & raw .bin payload exporter"; font-size: 11px; color: #c8cdd5; }
+                    }
+                }
+            }
+
+            Rectangle { height: 1px; background: #272c33; }
+
+            Text {
+                text: "💡 Getting Started: Choose a save file above and click 'Load & Decrypt' (or drag & drop onto this tab) to open editor controls.";
+                font-size: 11px;
+                color: #d9bc69;
+            }
+        }
+    }
+
+    if root.data.loaded: ScrollView {
+        vertical-stretch: 1;
+        VerticalLayout {
+            spacing: 10px;
+            alignment: start;
+
+            Rectangle {
+                background: #181b1f; border-radius: 4px; border-width: 1px; border-color: #272c33;
+                VerticalLayout {
+                    padding: 10px;
+                    spacing: 6px;
+                    HorizontalLayout {
+                        Text { text: "SAVE METADATA: " + root.data.file_name; font-size: 11px; font-weight: 700; color: #d9bc69; vertical-alignment: center; }
+                        Rectangle { horizontal-stretch: 1; }
+                        Button { text: "Dump Raw .bin"; height: 26px; clicked => { root.export_bin(); } }
+                        Button { text: "Reload"; height: 26px; clicked => { root.run_reload(); } }
+                    }
+                    HorizontalLayout {
+                        spacing: 16px;
+                        Text { text: "Type: " + root.data.save_type; font-size: 11px; color: #e8e6d6; }
+                        Text { text: "Platform: " + root.data.platform; font-size: 11px; color: #e8e6d6; }
+                        Text { text: "Payload: " + root.data.payload_size; font-size: 11px; color: #e8e6d6; }
+                        Rectangle { horizontal-stretch: 1; }
+                    }
+                }
+            }
+
+            Rectangle {
+                background: #181b1f; border-radius: 4px; border-width: 1px; border-color: #272c33;
+                VerticalLayout {
+                    padding: 10px;
+                    spacing: 6px;
+                    Text { text: "HEADER SLOT TITLE & TIMESTAMP (UTF-16)"; font-size: 11px; font-weight: 700; color: #d9bc69; }
+                    LineEdit {
+                        text <=> root.data.slot_title;
+                        placeholder-text: "Slot title / timestamp metadata";
+                        height: 30px;
+                    }
+                }
+            }
+
+            if root.data.slot_counter != "": Rectangle {
+                background: #181b1f; border-radius: 4px; border-width: 1px; border-color: #272c33;
+                VerticalLayout {
+                    padding: 10px;
+                    spacing: 6px;
+                    Text { text: "CAMPAIGN PLAYTIME TICK COUNTER (OFFSET 0x00030)"; font-size: 11px; font-weight: 700; color: #d9bc69; }
+                    HorizontalLayout {
+                        spacing: 8px;
+                        LineEdit {
+                            text <=> root.data.slot_counter;
+                            placeholder-text: "32-bit tick counter";
+                            horizontal-stretch: 1;
+                            height: 30px;
+                        }
+                        Button { text: "+10 Hours"; height: 30px; clicked => { root.adjust_playtime(10); } }
+                        Button { text: "+50 Hours"; height: 30px; clicked => { root.adjust_playtime(50); } }
+                        Button { text: "Reset (0)"; height: 30px; clicked => { root.adjust_playtime(0); } }
+                    }
+                }
+            }
+
+            if root.data.has_json: Rectangle {
+                background: #181b1f; border-radius: 4px; border-width: 1px; border-color: #272c33;
+                VerticalLayout {
+                    padding: 10px;
+                    spacing: 6px;
+                    Text { text: "PROFILE UNLOCKS & ENTITLEMENTS (EMBEDDED JSON)"; font-size: 11px; font-weight: 700; color: #d9bc69; }
+                    HorizontalLayout {
+                        spacing: 8px;
+                        Button { text: "Unlock All DLCs (Fallen Ghosts / Narco Road)"; height: 28px; clicked => { root.apply_profile_unlocks(0); } }
+                        Button { text: "Unlock Club & Store Rewards"; height: 28px; clicked => { root.apply_profile_unlocks(1); } }
+                        Button { text: "Unlock Live Challenges"; height: 28px; clicked => { root.apply_profile_unlocks(2); } }
+                        Rectangle { horizontal-stretch: 1; }
+                    }
+                    LineEdit {
+                        text <=> root.data.json_content;
+                        placeholder-text: "Embedded JSON payload";
+                        height: 32px;
+                    }
+                }
+            }
+
+            Rectangle {
+                background: #181b1f; border-radius: 4px; border-width: 1px; border-color: #272c33;
+                VerticalLayout {
+                    padding: 10px;
+                    spacing: 6px;
+                    Text { text: "IN-MEMORY HEX SEARCH & REPLACE"; font-size: 11px; font-weight: 700; color: #d9bc69; }
+                    HorizontalLayout {
+                        spacing: 8px;
+                        Button { text: "Preset: Max Resources"; height: 26px; clicked => { root.apply_quick_patch(0); } }
+                        Button { text: "Preset: Max Skill Points"; height: 26px; clicked => { root.apply_quick_patch(1); } }
+                        Rectangle { horizontal-stretch: 1; }
+                    }
+                    HorizontalLayout {
+                        spacing: 8px;
+                        LineEdit {
+                            text <=> root.hex_find;
+                            placeholder-text: "Find hex bytes (e.g. 00 27 10 00)";
+                            horizontal-stretch: 1;
+                            height: 30px;
+                        }
+                        LineEdit {
+                            text <=> root.hex_replace;
+                            placeholder-text: "Replace with hex bytes (e.g. 00 50 20 00)";
+                            horizontal-stretch: 1;
+                            height: 30px;
+                        }
+                        Button {
+                            text: "Patch Bytes";
+                            height: 30px;
+                            clicked => { root.apply_hex_patch(); }
+                        }
+                    }
+                }
+            }
+
+            Rectangle {
+                background: #181b1f; border-radius: 4px; border-width: 1px; border-color: #272c33;
+                VerticalLayout {
+                    padding: 10px;
+                    spacing: 6px;
+                    Text { text: "RE-ENCRYPT & RESIGN MODIFIED SAVE"; font-size: 11px; font-weight: 700; color: #d9bc69; }
+                    HorizontalLayout {
+                        spacing: 8px;
+                        Text { text: "Target UUID:"; width: 75px; vertical-alignment: center; color: #d0d4dc; font-size: 11px; }
+                        LineEdit {
+                            text <=> root.target_uuid;
+                            placeholder-text: "Enter 36-character Ubisoft Account UUID";
+                            horizontal-stretch: 1;
+                            height: 30px;
+                        }
+                        Text { text: "Platform:"; width: 50px; vertical-alignment: center; color: #d0d4dc; font-size: 11px; }
+                        CustomComboBox {
+                            model: ["Ubisoft", "Steam"];
+                            current-index <=> root.platform;
+                            width: 110px;
+                        }
+                        Button {
+                            text: "Save & Resign (.save)";
+                            primary: true;
+                            height: 30px;
+                            clicked => { root.run_save(); }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    Rectangle {
+        vertical-stretch: 0;
+        height: 52px;
+        background: #141618;
+        border-radius: 4px;
+        border-width: 1px;
+        border-color: #272c33;
+        ScrollView {
+            VerticalLayout {
+                padding-left: 8px;
+                padding-right: 8px;
+                padding-top: 6px;
+                padding-bottom: 6px;
+                alignment: start;
+                Text {
+                    text: root.log;
+                    color: #dcdfe4;
+                    font-size: 11px;
+                    font-family: "Consolas";
+                    wrap: word-wrap;
+                }
+            }
+        }
+    }
+}

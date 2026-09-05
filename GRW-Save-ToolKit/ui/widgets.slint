@@ -1,0 +1,91 @@
+export component CustomComboBox inherits Rectangle {
+    in property <[string]> model: [];
+    in-out property <int> current-index: 0;
+    callback selected(int);
+
+    height: 32px;
+    min-width: 80px;
+    background: ta.has-hover ? #2a3040 : #1e2127;
+    border-radius: 4px;
+    border-width: 1px;
+    border-color: ta.has-hover ? #6070a0 : #383d45;
+
+    ta := TouchArea {
+        clicked => { popup.show(); }
+    }
+
+    HorizontalLayout {
+        padding-left: 10px;
+        padding-right: 8px;
+        spacing: 8px;
+        Text {
+            text: root.model[root.current-index];
+            color: #e8e6d6;
+            font-size: 13px;
+            vertical-alignment: center;
+            horizontal-stretch: 1;
+        }
+        Rectangle {
+            width: 10px;
+            Path {
+                width: 10px;
+                height: 6px;
+                fill: ta.has-hover ? #d9bc69 : #6c7280;
+                MoveTo { x: 0; y: 0; }
+                LineTo { x: 10; y: 0; }
+                LineTo { x: 5; y: 6; }
+                Close { }
+            }
+        }
+    }
+
+    popup := PopupWindow {
+        x: 0;
+        y: root.height + 2px;
+        width: root.width;
+
+        Rectangle {
+            background: #1e2127;
+            border-radius: 4px;
+            border-width: 1px;
+            border-color: #4a5573;
+            drop-shadow-blur: 8px;
+            drop-shadow-color: #00000088;
+
+            VerticalLayout {
+                padding: 4px;
+                spacing: 2px;
+                for item[idx] in root.model: Rectangle {
+                    height: 30px;
+                    border-radius: 3px;
+                    background: idx == root.current-index ? #2b3550 : (row_ta.has-hover ? #252c3a : transparent);
+                    HorizontalLayout {
+                        padding-left: 10px;
+                        padding-right: 8px;
+                        spacing: 6px;
+                        Text {
+                            text: item;
+                            color: idx == root.current-index ? #d9bc69 : #e8e6d6;
+                            font-size: 13px;
+                            vertical-alignment: center;
+                            horizontal-stretch: 1;
+                        }
+                        if idx == root.current-index: Text {
+                            text: "✓";
+                            color: #d9bc69;
+                            font-size: 11px;
+                            vertical-alignment: center;
+                        }
+                    }
+                    row_ta := TouchArea {
+                        clicked => {
+                            root.current-index = idx;
+                            root.selected(idx);
+                            popup.close();
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,150 @@
+import { Button, VerticalBox, HorizontalBox, ScrollView, LineEdit, CheckBox } from "std-widgets.slint";
+import { CustomComboBox } from "widgets.slint";
+
+export component ResignerTab inherits VerticalBox {
+    padding: 16px;
+    spacing: 12px;
+
+    in-out property <bool> is_folder: true;
+    in-out property <string> path: "";
+    in-out property <string> target_id: "";
+    in-out property <string> source_id: "";
+    in-out property <int> platform: 0;
+    in-out property <string> out_dir: "_OUTPUT";
+    in-out property <string> log: "Ready. Select a save file or directory and enter target User ID.";
+
+    callback browse_path();
+    callback browse_out();
+    callback run_resign();
+
+    Text { text: "SAVE RESIGNER"; font-size: 18px; font-weight: 700; color: #e8e6d6; }
+    Text { text: "Re-sign save files to a new Ubisoft User ID and target platform."; font-size: 14px; color: #8e9297; }
+
+    HorizontalLayout {
+        spacing: 10px;
+        Text { text: root.is_folder ? "Input Folder:" : "Input File:"; width: 100px; vertical-alignment: center; color: #d0d4dc; }
+        LineEdit {
+            text <=> root.path;
+            placeholder-text: root.is_folder ? "Path to folder containing .save files" : "Path to .save file";
+            horizontal-stretch: 1;
+        }
+        Button { text: "Browse"; clicked => { root.browse_path(); } }
+        
+        CheckBox {
+            text: "File only";
+            horizontal-stretch: 0;
+            checked: !root.is_folder;
+            toggled => { root.is_folder = !self.checked; }
+        }
+        
+    }
+
+    HorizontalLayout {
+        spacing: 10px;
+        Text { text: "Target UUID:"; width: 100px; vertical-alignment: center; color: #d0d4dc; }
+        LineEdit {
+            text <=> root.target_id;
+            placeholder-text: "e.g. 80f33a39-e682-4d1f-b693-39267e890df2";
+            horizontal-stretch: 1;
+        }
+    }
+
+    HorizontalLayout {
+        spacing: 10px;
+        Text { text: "Source UUID:"; width: 100px; vertical-alignment: center; color: #d0d4dc; }
+        LineEdit {
+            text <=> root.source_id;
+            placeholder-text: "(Optional) Verify signature against original ID";
+            horizontal-stretch: 1;
+        }
+    }
+
+    HorizontalLayout {
+        spacing: 10px;
+        Text { text: "Platform:"; width: 100px; vertical-alignment: center; color: #d0d4dc; }
+        CustomComboBox {
+            model: ["Ubisoft Connect", "Steam"];
+            current-index <=> root.platform;
+            width: 180px;
+        }
+        Rectangle { horizontal-stretch: 1; }
+    }
+
+    HorizontalLayout {
+        spacing: 10px;
+        Text { text: "Output Dir:"; width: 100px; vertical-alignment: center; color: #d0d4dc; }
+        LineEdit {
+            text <=> root.out_dir;
+            placeholder-text: "_OUTPUT";
+            horizontal-stretch: 1;
+        }
+        Button { text: "Browse"; clicked => { root.browse_out(); } }
+    }
+
+    HorizontalLayout {
+        spacing: 10px;
+        Button {
+            text: "EXECUTE RESIGN";
+            primary: true;
+            clicked => { root.run_resign(); }
+        }
+    }
+
+    Rectangle {
+        vertical-stretch: 1;
+        background: #0d0f12;
+        border-radius: 4px;
+        border-width: 1px;
+        border-color: #272c33;
+        clip: true;
+
+        VerticalLayout {
+            padding: 0px;
+            spacing: 0px;
+
+            Rectangle {
+                height: 30px;
+                background: #16191e;
+
+                HorizontalLayout {
+                    padding-left: 14px;
+                    padding-right: 14px;
+                    alignment: start;
+
+                    Text {
+                        text: "TERMINAL OUTPUT";
+                        font-size: 14px;
+                        font-weight: 700;
+                        color: #dce1eb;
+                        letter-spacing: 0.8px;
+                        vertical-alignment: center;
+                    }
+                }
+            }
+
+            Rectangle {
+                height: 1px;
+                background: #232830;
+            }
+
+            ScrollView {
+                vertical-stretch: 1;
+                horizontal-stretch: 1;
+
+                VerticalLayout {
+                    padding: 14px;
+                    alignment: start;
+
+                    Text {
+                        text: root.log;
+                        color: #86de74;
+                        font-size: 14px;
+                        font-family: "Consolas";
+                        horizontal-alignment: left;
+                        wrap: word-wrap;
+                    }
+                }
+            }
+        }
+    }
+}

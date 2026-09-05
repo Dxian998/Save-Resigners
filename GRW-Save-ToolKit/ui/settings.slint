@@ -1,0 +1,53 @@
+import { Button, VerticalBox, HorizontalBox } from "std-widgets.slint";
+import { CustomComboBox } from "widgets.slint";
+
+export component SettingsTab inherits VerticalBox {
+    padding: 16px;
+    spacing: 16px;
+
+    in-out property <int> default_tab: 0;
+    in-out property <string> save_status: "";
+    callback save_settings(int);
+
+    Text { text: "TOOLKIT SETTINGS"; font-size: 16px; font-weight: 700; color: #e8e6d6; }
+    Text { text: "Configure startup defaults and application preferences."; font-size: 12px; color: #8e9297; }
+
+    Rectangle {
+        background: #181b1f; border-radius: 4px; border-width: 1px; border-color: #272c33;
+        VerticalBox {
+            padding: 16px;
+            spacing: 12px;
+            Text { text: "DEFAULT STARTUP TAB"; font-size: 11px; font-weight: 700; color: #d9bc69; }
+            HorizontalLayout {
+                spacing: 12px;
+                alignment: start;
+                CustomComboBox {
+                    model: ["Resigner", "Backups", "Inspector", "Workshop", "POC Editor", "Diagnostics"];
+                    current-index <=> root.default_tab;
+                    width: 200px;
+                }
+                Button {
+                    text: "Save Preference";
+                    primary: true;
+                    clicked => {
+                        root.save_settings(root.default_tab);
+                        root.save_status = "Saved.";
+                    }
+                }
+                if root.save_status != "": Text {
+                    text: root.save_status;
+                    color: #a2ca84;
+                    font-size: 13px;
+                    vertical-alignment: center;
+                }
+            }
+            Text {
+                text: "The selected tab will automatically open whenever the toolkit launches.";
+                font-size: 11px;
+                color: #8e9297;
+            }
+        }
+    }
+
+    Rectangle { vertical-stretch: 1; }
+}

@@ -1,0 +1,170 @@
+import { Button, VerticalBox, HorizontalBox, ScrollView, LineEdit } from "std-widgets.slint";
+
+export struct SaveInfoData {
+    loaded: bool,
+    file_name: string,
+    file_size: string,
+    platform: string,
+    slot_title: string,
+    seed1: string,
+    seed2: string,
+    seed3: string,
+    digest: string,
+    hex_preview: string,
+}
+
+export component InspectorTab inherits VerticalBox {
+    padding: 16px;
+    spacing: 12px;
+
+    in-out property <string> path: "";
+    in-out property <SaveInfoData> data;
+
+    callback browse_file();
+    callback run_inspect();
+
+    Text { text: "SAVE STRUCTURE INSPECTOR"; font-size: 18px; font-weight: 700; color: #e8e6d6; }
+    Text { text: "Decompose and inspect internal header metadata, cryptographic seeds, and payload structure."; font-size: 14px; color: #8e9297; }
+
+    HorizontalLayout {
+        spacing: 10px;
+        Text { text: "Save File:"; width: 80px; vertical-alignment: center; color: #d0d4dc; }
+        LineEdit {
+            text <=> root.path;
+            placeholder-text: "Select a .save file to inspect";
+            horizontal-stretch: 1;
+        }
+        Button { text: "Browse"; clicked => { root.browse_file(); } }
+        Button { text: "Inspect"; primary: true; clicked => { root.run_inspect(); } }
+    }
+
+    GridLayout {
+        spacing: 10px;
+        Row {
+            Rectangle {
+                background: #181b1f; border-radius: 4px; border-width: 1px; border-color: #272c33;
+                VerticalBox {
+                    Text { text: "SLOT TITLE / TIMESTAMP"; font-size: 12px; font-weight: 700; color: #d9bc69; }
+                    Text {
+                        text: root.data.loaded ? root.data.slot_title : "—";
+                        font-size: 14px;
+                        color: root.data.loaded ? #e8e6d6 : #5c6370;
+                    }
+                }
+            }
+            Rectangle {
+                background: #181b1f; border-radius: 4px; border-width: 1px; border-color: #272c33;
+                VerticalBox {
+                    Text { text: "PLATFORM"; font-size: 12px; font-weight: 700; color: #d9bc69; }
+                    Text {
+                        text: root.data.loaded ? root.data.platform : "—";
+                        font-size: 14px;
+                        color: root.data.loaded ? #e8e6d6 : #5c6370;
+                    }
+                }
+            }
+            Rectangle {
+                background: #181b1f; border-radius: 4px; border-width: 1px; border-color: #272c33;
+                VerticalBox {
+                    Text { text: "FILE SIZE"; font-size: 12px; font-weight: 700; color: #d9bc69; }
+                    Text {
+                        text: root.data.loaded ? root.data.file_size : "—";
+                        font-size: 14px;
+                        color: root.data.loaded ? #e8e6d6 : #5c6370;
+                    }
+                }
+            }
+        }
+        Row {
+            Rectangle {
+                background: #181b1f; border-radius: 4px; border-width: 1px; border-color: #272c33;
+                VerticalBox {
+                    Text { text: "SEED 1 (XOR STREAM)"; font-size: 12px; font-weight: 700; color: #d9bc69; }
+                    Text {
+                        text: root.data.loaded ? root.data.seed1 : "—";
+                        font-size: 14px;
+                        color: root.data.loaded ? #e8e6d6 : #5c6370;
+                    }
+                }
+            }
+            Rectangle {
+                background: #181b1f; border-radius: 4px; border-width: 1px; border-color: #272c33;
+                VerticalBox {
+                    Text { text: "SEED 2 (BLOCK SHUFFLE)"; font-size: 12px; font-weight: 700; color: #d9bc69; }
+                    Text {
+                        text: root.data.loaded ? root.data.seed2 : "—";
+                        font-size: 14px;
+                        color: root.data.loaded ? #e8e6d6 : #5c6370;
+                    }
+                }
+            }
+            Rectangle {
+                background: #181b1f; border-radius: 4px; border-width: 1px; border-color: #272c33;
+                VerticalBox {
+                    Text { text: "SEED 3 (OBFUSCATION)"; font-size: 12px; font-weight: 700; color: #d9bc69; }
+                    Text {
+                        text: root.data.loaded ? root.data.seed3 : "—";
+                        font-size: 14px;
+                        color: root.data.loaded ? #e8e6d6 : #5c6370;
+                    }
+                }
+            }
+        }
+        Row {
+            Rectangle {
+                colspan: 3;
+                background: #181b1f; border-radius: 4px; border-width: 1px; border-color: #272c33;
+                VerticalBox {
+                    Text { text: "EMBEDDED SHA-256 DIGEST"; font-size: 12px; font-weight: 700; color: #d9bc69; }
+                    Text {
+                        text: root.data.loaded ? root.data.digest : "—";
+                        font-size: 13px;
+                        color: root.data.loaded ? #e8e6d6 : #5c6370;
+                    }
+                }
+            }
+        }
+    }
+
+    Rectangle {
+        vertical-stretch: 1;
+        background: #141618;
+        border-radius: 4px;
+        border-width: 1px;
+        border-color: #272c33;
+        clip: true;
+
+        VerticalLayout {
+            padding-left: 12px;
+            padding-right: 12px;
+            padding-top: 10px;
+            padding-bottom: 10px;
+            spacing: 8px;
+
+            Text {
+                text: "PAYLOAD HEX DUMP (PLAINTEXT PREVIEW)";
+                font-size: 12px;
+                font-weight: 700;
+                color: #8e9297;
+            }
+
+            ScrollView {
+                vertical-stretch: 1;
+                horizontal-stretch: 1;
+
+                VerticalLayout {
+                    alignment: start;
+                    Text {
+                        text: root.data.hex_preview != "" ? root.data.hex_preview :
+"Offset(h)  00 01 02 03 04 05 06 07  08 09 0A 0B 0C 0D 0E 0F  Decoded Text\n---------  -----------------------------------------------  ----------------\n00000000   -- -- -- -- -- -- -- --  -- -- -- -- -- -- -- --  ................\n00000010   -- -- -- -- -- -- -- --  -- -- -- -- -- -- -- --  ................\n00000020   -- -- -- -- -- -- -- --  -- -- -- -- -- -- -- --  ................\n00000030   -- -- -- -- -- -- -- --  -- -- -- -- -- -- -- --  ................\n00000040   -- -- -- -- -- -- -- --  -- -- -- -- -- -- -- --  ................\n00000050   -- -- -- -- -- -- -- --  -- -- -- -- -- -- -- --  ................\n00000060   -- -- -- -- -- -- -- --  -- -- -- -- -- -- -- --  ................\n00000070   -- -- -- -- -- -- -- --  -- -- -- -- -- -- -- --  ................\n00000080   -- -- -- -- -- -- -- --  -- -- -- -- -- -- -- --  ................\n00000090   -- -- -- -- -- -- -- --  -- -- -- -- -- -- -- --  ................\n000000A0   -- -- -- -- -- -- -- --  -- -- -- -- -- -- -- --  ................\n000000B0   -- -- -- -- -- -- -- --  -- -- -- -- -- -- -- --  ................\n000000C0   -- -- -- -- -- -- -- --  -- -- -- -- -- -- -- --  ................\n000000D0   -- -- -- -- -- -- -- --  -- -- -- -- -- -- -- --  ................\n000000E0   -- -- -- -- -- -- -- --  -- -- -- -- -- -- -- --  ................\n000000F0   -- -- -- -- -- -- -- --  -- -- -- -- -- -- -- --  ................";
+                        color: root.data.hex_preview != "" ? #dcdfe4 : #4f5666;
+                        font-size: 12px;
+                        font-family: "Consolas";
+                        horizontal-alignment: left;
+                        wrap: no-wrap;
+                    }
+                }
+            }
+        }
+    }
+}

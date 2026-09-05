@@ -1,0 +1,131 @@
+import { Button, VerticalBox, HorizontalBox, ScrollView, LineEdit, CheckBox } from "std-widgets.slint";
+import { CustomComboBox } from "widgets.slint";
+
+export struct BackupItem {
+    name: string,
+    date: string,
+    size: string,
+    full_path: string,
+}
+
+export component BackupTab inherits VerticalBox {
+    padding: 16px;
+    spacing: 12px;
+
+    in-out property <string> ubi_dir: "C:\\Program Files (x86)\\Ubisoft\\Ubisoft Game Launcher\\savegames";
+    in-out property <string> target_uuid: "";
+    in-out property <string> target_dir: "_BACKUPS";
+    in-out property <bool> auto_enabled: false;
+    in-out property <int> interval_idx: 0;
+    in-out property <[BackupItem]> items: [];
+    in-out property <int> selected_idx: -1;
+    in-out property <string> status: "Ready. Select the savegames directory, enter your Account UUID, then create a snapshot.";
+
+    callback browse_ubi_dir();
+    callback detect_uuids();
+    callback browse_dir();
+    callback run_snapshot();
+    callback toggle_auto(bool, int);
+    callback run_restore(string);
+    callback refresh_list();
+
+    Text { text: "SAVE BACKUP MANAGER"; font-size: 18px; font-weight: 700; color: #e8e6d6; }
+    Text { text: "Back up your GRW save by UUID folder from the Ubisoft savegames directory."; font-size: 14px; color: #8e9297; }
+
+    HorizontalLayout {
+        spacing: 10px;
+        Text { text: "Savegames Dir:"; width: 110px; vertical-alignment: center; color: #d0d4dc; }
+        LineEdit {
+            text <=> root.ubi_dir;
+            placeholder-text: "C:\\Program Files (x86)\\Ubisoft\\Ubisoft Game Launcher\\savegames";
+            horizontal-stretch: 1;
+        }
+        Button { text: "Browse"; clicked => { root.browse_ubi_dir(); } }
+    }
+
+    HorizontalLayout {
+        spacing: 10px;
+        Text { text: "Account UUID:"; width: 110px; vertical-alignment: center; color: #d0d4dc; }
+        LineEdit {
+            text <=> root.target_uuid;
+            placeholder-text: "e.g. 12345678-abcd-ef01-2345-67890abcdef0";
+            horizontal-stretch: 1;
+        }
+        Button { text: "Detect"; clicked => { root.detect_uuids(); } }
+    }
+
+    HorizontalLayout {
+        spacing: 10px;
+        Text { text: "Backup Dir:"; width: 110px; vertical-alignment: center; color: #d0d4dc; }
+        LineEdit {
+            text <=> root.target_dir;
+            placeholder-text: "_BACKUPS";
+            horizontal-stretch: 1;
+        }
+        Button { text: "Browse"; clicked => { root.browse_dir(); } }
+        Button { text: "Instant Snapshot"; primary: true; clicked => { root.run_snapshot(); } }
+    }
+
+    HorizontalLayout {
+        spacing: 12px;
+        CheckBox {
+            text: "Periodic Auto-Backup";
+            horizontal-stretch: 0;
+            checked: root.auto_enabled;
+            toggled => {
+                root.auto_enabled = self.checked;
+                root.toggle_auto(self.checked, root.interval_idx);
+            }
+        }
+        Rectangle { horizontal-stretch: 1; }
+        Text { text: "Interval:"; vertical-alignment: center; color: #d0d4dc; }
+        CustomComboBox {
+            model: ["Every 5 Minutes", "Every 10 Minutes", "Every 15 Minutes", "Every 30 Minutes", "Every 60 Minutes"];
+            current-index <=> root.interval_idx;
+            width: 170px;
+            selected(idx) => {
+                if (root.auto_enabled) {
+                    root.toggle_auto(true, idx);
+                }
+            }
+        }
+        Button { text: "Refresh List"; clicked => { root.refresh_list(); } }
+    }
+
+    Rectangle {
+        vertical-stretch: 1;
+        background: #181b1f;
+        border-radius: 4px;
+        border-width: 1px;
+        border-color: #272c33;
+        ScrollView {
+            VerticalBox {
+                padding: 8px;
+                spacing: 4px;
+                for item[idx] in root.items: Rectangle {
+                    height: 36px;
+                    border-radius: 3px;
+                    background: root.selected_idx == idx ? #2b323c : #1f2329;
+                    border-width: root.selected_idx == idx ? 1px : 0px;
+                    border-color: #d9bc69;
+                    HorizontalBox {
+                        padding-left: 10px; padding-right: 10px;
+                        Text { text: item.name; font-size: 13px; font-weight: 700; color: #e8e6d6; vertical-alignment: center; }
+                        Rectangle { horizontal-stretch: 1; }
+                        Text { text: item.date; font-size: 13px; color: #8e9297; vertical-alignment: center; }
+                        Rectangle { width: 16px; }
+                        Text { text: item.size; font-size: 13px; color: #d9bc69; vertical-alignment: center; }
+                        Rectangle { width: 16px; }
+                        Button {
+                            text: "Restore";
+                            clicked => { root.run_restore(item.full_path); }
+                        }
+                    }
+                    TouchArea { clicked => { root.selected_idx = idx; } }
+                }
+            }
+        }
+    }
+
+    Text { text: root.status; font-size: 13px; color: #a2ca84; }
+}
