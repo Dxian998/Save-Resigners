@@ -1,0 +1,34 @@
+cargo-features = ["profile-rustflags", "trim-paths"]
+
+[workspace]
+members = [".", "ui"]
+
+[package]
+name = "ace7-savecrypt"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+name = "ace7_savecrypt"
+path = "src/lib.rs"
+
+[[bin]]
+name = "ace7-savecrypt"
+path = "src/main.rs"
+
+[dependencies]
+aes = "0.9"
+cipher = "0.5"
+clap = { version = "4.5", features = ["derive"] }
+rayon = "1.10"
+anyhow = "1.0"
+muddy = "0.3"
+
+[profile.release]
+lto = true
+strip = true
+codegen-units = 1
+opt-level = 3
+panic = "abort"
+trim-paths = "all"
+rustflags = ["-Cdebuginfo=0", "-Zthreads=8"]

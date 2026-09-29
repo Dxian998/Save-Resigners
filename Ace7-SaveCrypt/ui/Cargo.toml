@@ -1,0 +1,14 @@
+[package]
+name = "ace7-savetoolkit"
+version = "1.0.0"
+edition = "2024"
+
+[dependencies]
+ace7_savetoolkit = { package = "ace7-savecrypt", path = ".." }
+iced = { version = "0.14", default-features = false, features = ["tiny-skia", "smol"] }
+rfd = "0.17"
+futures = "0.3"
+ico = "0.5"
+
+[build-dependencies]
+winres = "0.1"
