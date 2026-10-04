@@ -1,0 +1,24 @@
+[package]
+name = "wdl-savecrypt"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+name = "wdl_savecrypt"
+path = "src/lib.rs"
+
+[[bin]]
+name = "wdl-savecrypt"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4.5", features = ["derive"] }
+sha2 = "0.10"
+anyhow = "1.0"
+
+[profile.release]
+lto = true
+strip = true
+codegen-units = 1
+opt-level = 3
+panic = "abort"
